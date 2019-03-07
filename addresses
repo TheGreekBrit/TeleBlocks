@@ -1,0 +1,46 @@
+
+
+$7E - X pos relative to screen
+$80 - Y pos relative to screen
+
+$94 - X pos next frame
+$96 - Y pos next frame
+
+$D1 - X pos curr frame
+$D3 - Y pos curr frame
+
+
+$2118	- writes tilemap byte
+$2119	- writes prop byte
+
+$3000	- Layer 1 Tilemap in VRAM
+		- 64x32 tiles
+		- x pos <<4 mod 32
+
+$0FBE 	- 16 bit pointer table to map16 tiles in bank 0D.
+		- indexed by map16 tile number #$XXXX
+		- $8000 -> $0D8000
+$0DXXXX - map16 tile data
+		- data and property bytes (YXPCCCTT)
+		- $TLdata, $TLprop, $BLdata, $BLprop,
+		  $TRdata, $TRprop, $BRdata, $BRprop
+
+$05E000	- layer 1 level data pointer table
+		- 3 bytes each, one addr per level ($200 levels)
+
+#LEVEL DATA
+X 			- layer 1 data address
+$X ~ $X+4	- primary level header (5 bytes)
+$X+5 		- list of objects (3 bytes each)
+			- #$FF first byte = end of data
+			- NBBYYYYY bbbbXXXX SSSSSSSS
+			- N = new screen flag
+			- BB bbbb = standard object number
+			- YYYYY = y position
+			- XXXX = X position
+			- SSSSSSSS = settings
+			- X/Y pos swapped in vertical levels
+
+ldx !xpos
+ldy !ypos
+lda $X+5,x (?)
