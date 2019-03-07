@@ -62,7 +62,7 @@ function decompress_object_data(ROM, level_data) {
 		// decompress level data
 		new_screen_flag = (byte1 & 0b10000000) == 0b10000000;	//AND N-------
 		object_number = (byte1 & 0b01100000) >> 1;				//AND -BB----- (object_number = --BB----)
-		object_number = (byte2 & 0b11110000) | object_number;	//AND bbbb---- (object_number = BBbbbb)
+		object_number = (byte2 >> 4) | object_number;	//AND bbbb---- (object_number = BBbbbb)
 		
 		//todo implement vertical level check
 		//flip x/y values if vertical level
