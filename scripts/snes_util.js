@@ -1,5 +1,4 @@
 function snes_to_pc(addr) {
-	console.log(addr)
 	let bank = (addr & 0xFF0000) >> 16;
 	let absolute = addr & 0x00FFFF;
 	let abs_corrected = (absolute - 0x8000) * (1 - bank%2)
@@ -13,7 +12,12 @@ function pc_to_snes(addr) {
 	return bank | abs_corrected;
 }
 
+function toHex(num, prefix=false, padSize=2) {
+	return prefix ? prefix.toString().concat(Number(num).toString(16).padStart(padSize, '0')) : Number(num).toString(16).padStart(padSize, '0');
+}
+
 module.exports = {
 	toPc: snes_to_pc,
-	toSnes: pc_to_snes
+	toSnes: pc_to_snes,
+	toHex: toHex
 }

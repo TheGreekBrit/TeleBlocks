@@ -1,16 +1,15 @@
 const EventEmitter = require('events');
 const fs = require('fs');
+const Objects = require('./Objects.js');
 class MyEmitter extends EventEmitter {}
-
 
 class Rom {
 	constructor(rom_path) {
 		this.events = new MyEmitter();
-		//this.data = fs.readFileSync(rom_path);
 		fs.readFile(rom_path, (err, data) => {
 			if (err) throw err;
 			this.data = this.clobber_header(data);
-			this.events.emit('rom_loaded')
+			this.events.emit('rom_loaded');
 		});
 	}
 
@@ -19,6 +18,7 @@ class Rom {
 	}
 
 	read_bytes(num_bytes, addr=0x0) {
+		//console.log(this.data, num_bytes, addr);
 		return this.data.slice(addr, addr+num_bytes)
 	}
 
@@ -33,6 +33,10 @@ class Rom {
 
 	clobber_header(data) {
 		return data.slice(0x200)
+	}
+
+	create_object(dataAddress, screen) {
+		return new Objects(this, dataAddress, '1', screen);
 	}
 }
 
