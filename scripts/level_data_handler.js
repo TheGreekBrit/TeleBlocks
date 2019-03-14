@@ -2,7 +2,7 @@ const fs = require('fs');
 const Rom = require('./Rom.js');
 const Tools = require('./snes_util.js');
 
-const DEBUG = 2;
+const DEBUG = 0;
 
 const LAYER_1_PTR_TABLE = 0x2E000;	//$05E000
 
@@ -32,6 +32,9 @@ function get_level_data(ROM, level_number=0x106) {
 	level_objects = decompress_object_data(ROM, level_data_ptr+5);
 
 	if (DEBUG >= 1) print_decompressed(level_objects);
+	if (DEBUG === 0) {
+		print_decompressed_pretty(level_objects);
+	}
 }
 
 //@level_number: defaults to 0x106 (yoshi's island 2)
@@ -87,7 +90,18 @@ function decompress_object_data(ROM, level_data) {
 			if (Obj.isExit()) {
 				Obj.screenNumber = byte1 & 0b00011111;
 				Obj.secondaryExitFlag = (byte2 & 0b10) === 0b10;
-				Obj.destination = ((byte2 & 1) << 8) | byte4;
+				if ((byte2 & 0b10) === 1) {
+					//LM exit behavior
+					//pull destination high byte from second byte of level data
+                    Obj.destination = ((byte2 & 1) << 8) | byte4;
+                } else {
+					//classic exit behavior
+					//pull destination high byte from high byte of level number
+					let levelHighX = process.argv[3].toString(2) & 0xFF00;
+					if (DEBUG >= 2) console.log('levelHighX:', levelHighX);
+					Obj.destination = levelHighX | byte4;
+				}
+				if (DEBUG >= 2) console.log('high exit id:', (Obj.destination).toString(2));
 				decompressed.push(Obj);
                 idx++;		//adjust for 4-byte read
 				if (DEBUG >= 2) console.log('bytes:', byte1.toString(16), byte2.toString(16), byte3.toString(16), byte4.toString(16));
@@ -143,6 +157,42 @@ function print_decompressed(decompressed_objects) {
 	});
 
     console.log('total objects in level:', decompressed_objects.length)
+}
+
+function print_decompressed_pretty(decompressed_objects) {
+	let destination, xPos, yPos, name,
+		count=0, screenNumber=0;
+    console.group(`screen ${Tools.toHex(screenNumber, '$', 2)}:`);
+    decompressed_objects.forEach(obj => {
+    	//console.log(`Object ${count}:`);
+		if (obj.newScreenFlag) {
+			//console.log(obj.currentScreen, screenNumber);
+			console.groupEnd(`screen ${Tools.toHex(screenNumber, '$', 2)}:`);
+			screenNumber = obj.currentScreen;
+			console.group(`screen ${Tools.toHex(screenNumber, '$', 2)}:`);
+		}
+        switch (obj.type) {
+            case 'standard':
+            case 'extended':
+            	name = obj.name;
+            	xPos = Tools.toHex(obj.xPos, '$', 4);
+            	yPos = Tools.toHex(obj.yPos, '$', 4);
+                console.log(`${name} (${xPos}, ${yPos})`);
+                break;
+            case 'exit':
+            	screenNumber = Tools.toHex(obj.screenNumber, '$', 2);
+            	destination = Tools.toHex(obj.destination, '$', 4);
+            	console.log(`exit screen ${screenNumber}, destination ${destination}`);
+                break;
+            case 'jump':
+            	oldScreen = screenNumber;
+                screenNumber = Tools.toHex(obj.screenNumber, '$', 2);
+                console.log(`JUMP to screen ${screenNumber}`);
+                console.groupEnd(`screen ${Tools.toHex(oldScreen, '$', 2)}:`);
+                console.group(`screen ${screenNumber}:`);
+        }
+        count++;
+	});
 }
 
 main();

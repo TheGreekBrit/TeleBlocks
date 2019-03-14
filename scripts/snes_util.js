@@ -20,4 +20,4 @@ module.exports = {
 	toPc: snes_to_pc,
 	toSnes: pc_to_snes,
 	toHex: toHex
-}
+};

@@ -36,7 +36,7 @@ class Objects {
 
 	//extended object 0
 	isExit() {
-		console.log(this.isExtended(), this.bytes)
+		//console.log(this.isExtended(), this.bytes)
 		return this.isExtended() && (this.bytes[2] === 0);
 	}
 
@@ -117,7 +117,7 @@ class Objects {
 
 	updateScreen() {
 		if (this.currentScreen > this.highXPos) {
-			console.log('new screen!');
+			//console.log('new screen!');
 			this.highXPos = this.currentScreen;
 			this.xPos = this.getXPos();
 			this.yPos = this.getYPos();
@@ -129,7 +129,7 @@ class Objects {
     }
 
 	getXPos() {
-		console.log('highx:',this.highXPos, this.highXPos << 4, this.bytes[1]&0b1111)
+		//console.log('highx:',this.highXPos, this.highXPos << 4, this.bytes[1]&0b1111)
 		if (this.verticalLevel)
 			return this.bytes[0] & 0b00011111;								//AND ---XXXXX (byte1)
 		else
